@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qui Veut Gagner des Millions — Samplr</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&display=swap');
+
+  :root {
+    --accent: #ffcc00;
+    --accent2: #ff8c00;
+    --led: #00ff88;
+    --panel: #1a1a1a;
+    --pad-off: #242424;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #080808;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Share Tech Mono', monospace;
+    color: #ccc;
+    padding: 20px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+    pointer-events: none; z-index: 100;
+  }
+
+  .machine {
+    background: var(--panel);
+    border: 2px solid #333;
+    border-radius: 12px;
+    padding: 28px 28px 24px;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: 0 0 0 1px #444 inset, 0 30px 80px rgba(0,0,0,0.9);
+    position: relative;
+  }
+
+  .screw {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #2a2a2a;
+    border: 1px solid #444;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #2d2d2d;
+  }
+
+  .brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(14px, 4vw, 20px);
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(255,204,0,0.4);
+    line-height: 1;
+  }
+
+  .subtitle { font-size: 9px; color: #555; letter-spacing: 3px; margin-top: 4px; }
+
+  .leds { display: flex; gap: 8px; flex-shrink: 0; margin-left: 12px; }
+  .led {
+    width: 8px; height: 8px; border-radius: 50%; background: #222;
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  .led.green { background: var(--led); box-shadow: 0 0 8px var(--led); }
+  .led.yellow { background: var(--accent); box-shadow: 0 0 8px var(--accent); animation: blink 0.6s infinite; }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes padglow { 0%,100%{box-shadow:0 0 15px rgba(255,204,0,0.6)} 50%{box-shadow:0 0 40px rgba(255,204,0,1)} }
+
+  .display {
+    background: #0d0d00;
+    border: 1px solid #2a2a00;
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+  }
+
+  .disp-label { color: #3a3a00; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .disp-val {
+    font-family: 'Bebas Neue', sans-serif;
+    color: var(--accent);
+    font-size: 26px;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px rgba(255,204,0,0.5);
+    min-height: 34px;
+  }
+
+  .section-label { font-size: 9px; letter-spacing: 4px; color: #555; text-transform: uppercase; margin-bottom: 12px; }
+
+  .pads-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .pad {
+    aspect-ratio: 1;
+    background: var(--pad-off);
+    border-radius: 8px;
+    border: 1px solid #333;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.08s, background 0.08s, border-color 0.08s;
+  }
+
+  .pad::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 60%);
+    border-radius: 8px;
+    pointer-events: none;
+  }
+
+  .pad.ready { border-color: #3a3a3a; }
+
+  .pad.active {
+    transform: scale(0.91);
+    background: var(--accent) !important;
+    border-color: var(--accent2) !important;
+    animation: padglow 0.3s ease;
+  }
+
+  .pad-indicator {
+    position: absolute; top: 5px; right: 5px;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #ff4444;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .pad.loading .pad-indicator { background: var(--accent); animation: blink 0.6s infinite; }
+  .pad.ready .pad-indicator { background: var(--led); box-shadow: 0 0 5px var(--led); }
+  .pad.active .pad-indicator { background: #000; box-shadow: none; }
+
+  .pad-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(12px, 3vw, 15px);
+    letter-spacing: 1px;
+    color: #666;
+    text-align: center;
+    padding: 0 3px;
+    line-height: 1;
+    transition: color 0.08s;
+  }
+  .pad.ready .pad-name { color: #bbb; }
+  .pad.active .pad-name { color: #000; }
+
+  .pad-key {
+    font-size: 9px;
+    color: #3a3a3a;
+    letter-spacing: 2px;
+    margin-top: 4px;
+    transition: color 0.08s;
+  }
+  .pad.active .pad-key { color: rgba(0,0,0,0.5); }
+
+  .instructions {
+    padding-top: 14px;
+    border-top: 1px solid #1e1e1e;
+    font-size: 9px;
+    color: #3a3a3a;
+    letter-spacing: 1px;
+    text-align: center;
+    line-height: 2;
+  }
+  .instructions span { color: #555; }
+  kbd {
+    background: #222; border: 1px solid #333; border-radius: 3px;
+    padding: 1px 5px; font-family: 'Share Tech Mono', monospace;
+    font-size: 9px; color: #777;
+  }
+</style>
+</head>
+<body>
+
+<div class="machine">
+  <div class="screw" style="top:12px;left:12px"></div>
+  <div class="screw" style="top:12px;right:12px"></div>
+  <div class="screw" style="bottom:12px;left:12px"></div>
+  <div class="screw" style="bottom:12px;right:12px"></div>
+
+  <div class="header">
+    <div>
+      <div class="brand">QUI VEUT GAGNER DES MILLIONS</div>
+      <div class="subtitle">SAMPLR MK-2 — SOUNDBOARD</div>
+    </div>
+    <div class="leds">
+      <div class="led" id="led-load"></div>
+      <div class="led" id="led-play"></div>
+    </div>
+  </div>
+
+  <div class="display">
+    <div class="disp-label">Son joué</div>
+    <div class="disp-val" id="disp">CHARGEMENT…</div>
+  </div>
+
+  <div class="section-label">PADS</div>
+  <div class="pads-grid" id="grid"></div>
+
+  <div class="instructions">
+    <span>Touches :</span>
+    <kbd>A</kbd> <kbd>E</kbd> <kbd>R</kbd> <kbd>T</kbd> <kbd>P</kbd>
+    &nbsp;·&nbsp; <span>Ou appuie sur un pad</span>
+  </div>
+</div>
+
+<script>
+const PADS = [
+  { key:'A', label:'INTRO',   src:'https://res.cloudinary.com/do0fgtcng/video/upload/v1772188612/00_01_Intro_fcfs3l.mp3' },
+  { key:'E', label:'TICTAC',  src:'https://res.cloudinary.com/do0fgtcng/video/upload/v1772188613/00_02_QUESTION_kqod0x.mp3' },
+  { key:'R', label:'CORRECT', src:'https://res.cloudinary.com/do0fgtcng/video/upload/v1772188612/00_03_Bonne_r%C3%A9ponse_sxehdu.mp3' },
+  { key:'T', label:'FAUX',    src:'https://res.cloudinary.com/do0fgtcng/video/upload/v1772188612/00_03_Perdu_f5zida.mp3' },
+  { key:'P', label:'FIN',     src:'https://res.cloudinary.com/do0fgtcng/video/upload/v1772188613/00_03_fin_uzukeu.mp3' },
+];
+
+let current = null;
+let loadedCount = 0;
+
+const grid = document.getElementById('grid');
+const disp = document.getElementById('disp');
+const ledLoad = document.getElementById('led-load');
+const ledPlay = document.getElementById('led-play');
+
+PADS.forEach((pad, i) => {
+  // Build pad element
+  const el = document.createElement('div');
+  el.className = 'pad loading';
+  el.id = 'pad-' + i;
+  el.innerHTML = `<div class="pad-indicator"></div><div class="pad-name">${pad.label}</div><div class="pad-key">${pad.key}</div>`;
+  el.addEventListener('click', () => play(i));
+  grid.appendChild(el);
+
+  // Preload audio
+  const audio = new Audio(pad.src);
+  audio.preload = 'auto';
+  pad.audio = audio;
+
+  audio.addEventListener('canplaythrough', () => {
+    el.classList.remove('loading');
+    el.classList.add('ready');
+    loadedCount++;
+    if (loadedCount === PADS.length) {
+      disp.textContent = 'PRÊT';
+      ledLoad.classList.add('green');
+      ledLoad.classList.remove('yellow');
+    } else {
+      ledLoad.className = 'led yellow';
+    }
+  }, { once: true });
+
+  audio.addEventListener('error', () => {
+    el.classList.remove('loading');
+    disp.textContent = 'ERREUR';
+  }, { once: true });
+});
+
+function play(i) {
+  const pad = PADS[i];
+  if (!pad.audio) return;
+
+  if (current && current !== pad.audio) {
+    current.pause();
+    current.currentTime = 0;
+  }
+  current = pad.audio;
+  pad.audio.currentTime = 0;
+  pad.audio.play();
+
+  disp.textContent = pad.label;
+  ledPlay.classList.add('green');
+  pad.audio.onended = () => {
+    ledPlay.classList.remove('green');
+    disp.textContent = 'PRÊT';
+  };
+
+  const el = document.getElementById('pad-' + i);
+  el.classList.add('active');
+  setTimeout(() => el.classList.remove('active'), 250);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  const i = PADS.findIndex(p => p.key === e.key.toUpperCase());
+  if (i !== -1) play(i);
+});
+</script>
+</body>
+</html>
